@@ -4,7 +4,7 @@ import (
 	"github.com/lxn/walk"
 	. "github.com/lxn/walk/declarative"
 	"github.com/lxn/win"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"sort"
 	"syscall"
@@ -32,7 +32,7 @@ func main() {
 		return
 	}
 	screenX, screenY := getSystemMetrics(0), getSystemMetrics(1)
-	width, height := 550, 750
+	width, height := 720, 960
 	err := MainWindow{
 		OnDropFiles: func(f []string) {
 			if len(f) > 0 {
@@ -40,7 +40,7 @@ func main() {
 				if filepath.Ext(file) != ".lss" {
 					return
 				}
-				buf, err := ioutil.ReadFile(file)
+				buf, err := os.ReadFile(file)
 				if err != nil {
 					walk.MsgBox(mainWindow, "内部错误", err.Error(), walk.MsgBoxIconError)
 					return
@@ -84,7 +84,11 @@ func main() {
 					GetUserDefinedComboBox(),
 					TextLabel{
 						TextAlignment: AlignHFarVCenter,
-						Text:          "Auto Splitter Version: 3.1.5.0",
+						Text:          "Auto Splitter Version: 3.1.14.0",
+					},
+					PushButton{
+						Text:      "更新LiveSplit",
+						OnClicked: fixLiveSplit,
 					},
 				},
 			},
@@ -106,10 +110,13 @@ func main() {
 							},
 							ComboBox{
 								AssignTo: &startTriggerComboBox,
-								Model:    splitDescriptions,
+								Model:    &splitIdModel{},
 								Enabled:  false,
 								Editable: true,
 								Value:    splitDescriptions[0],
+								OnTextChanged: func() {
+									onSearchSplitId(true, &lineData{splitId: startTriggerComboBox})
+								},
 							},
 						},
 					},
@@ -152,6 +159,13 @@ func main() {
 						OnClicked: func() {
 							walk.MsgBox(mainWindow, "帮助", readme, walk.MsgBoxIconInformation)
 						},
+					}, PushButton{
+						MaxSize:   Size{Width: 100},
+						Alignment: AlignHFarVCenter,
+						Text:      "FAQ",
+						OnClicked: func() {
+							walk.MsgBox(mainWindow, "FAQ", faq, walk.MsgBoxIconInformation)
+						},
 					},
 				},
 			},
@@ -162,40 +176,6 @@ func main() {
 		walk.MsgBox(nil, "错误", err.Error(), walk.MsgBoxIconError)
 		return
 	}
-	//go func() {
-	//	resp, err := http.Get("https://raw.githubusercontent.com/slaurent22/hk-split-maker/main/src/asset/splits.txt")
-	//	if err != nil || resp.StatusCode != 200 {
-	//		return
-	//	}
-	//	buf, err := ioutil.ReadAll(resp.Body)
-	//	if err != nil {
-	//		return
-	//	}
-	//	if !bytes.Equal(buf, splitsFileBuf) {
-	//		err := updateBtn.SetText("更新")
-	//		if err != nil {
-	//			walk.MsgBox(mainWindow, "错误", err.Error(), walk.MsgBoxIconError)
-	//		} else {
-	//			var a int
-	//			a = updateBtn.Clicked().Attach(func() {
-	//				updateBtn.SetEnabled(false)
-	//				err := ioutil.WriteFile(filepath.Join(hkSplitMakerDir, "splits.txt"), buf, 0644)
-	//				if err != nil {
-	//					walk.MsgBox(mainWindow, "错误", err.Error(), walk.MsgBoxIconError)
-	//					return
-	//				}
-	//				initSplitsFile(false)
-	//				updateBtn.Clicked().Detach(a)
-	//				err = updateBtn.SetText("已是最新")
-	//				if err != nil {
-	//					walk.MsgBox(mainWindow, "错误", err.Error(), walk.MsgBoxIconError)
-	//					return
-	//				}
-	//			})
-	//			updateBtn.SetEnabled(true)
-	//		}
-	//	}
-	//}()
 	hWnd := mainWindow.Handle()
 	currStyle := win.GetWindowLong(hWnd, win.GWL_STYLE)
 	win.SetWindowLong(hWnd, win.GWL_STYLE, currStyle & ^win.WS_SIZEBOX)
