@@ -1,16 +1,17 @@
 # 空洞骑士计时器生成器（中文版）
 
-![](https://img.shields.io/github/languages/top/CuteReimu/hksplitmaker "Language")
-[![](https://img.shields.io/github/workflow/status/CuteReimu/hksplitmaker/Go)](https://github.com/CuteReimu/hksplitmaker/actions/workflows/golangci-lint.yml "Analysis")
+![](https://img.shields.io/github/go-mod/go-version/CuteReimu/hksplitmaker "Language")
+[![](https://img.shields.io/github/actions/workflow/status/CuteReimu/hksplitmaker/golangci-lint.yml?branch=master)](https://github.com/CuteReimu/hksplitmaker/actions/workflows/golangci-lint.yml "Analysis")
 [![](https://img.shields.io/github/license/CuteReimu/hksplitmaker)](https://github.com/CuteReimu/hksplitmaker/blob/master/LICENSE "LICENSE")
 
 <img src=".github/hksplitmaker.png" alt=""/>
 
-## 使用前请检查版本号
+> [!Note]
+> 本项目只能在Windows环境下运行。
 
-使用前打开LiveSplit -> 右键 -> Edit Splits -> Settings，如果在插件设置界面看不到版本号，或者看到的版本号低于本程序的版本号，那么生成出来的文件不一定能够生效。
- 
-如何升级LiveSplit的空洞骑士插件？一般情况下，打开LiveSplit时就会提示更新。如果没有提示更新，可以向其他人寻求`LiveSplit.HollowKnight.dll`文件，并覆盖到LiveSplit的安装目录下的`Components`文件夹中即可。
+## 一键更新LiveSplit的空洞骑士Auto Splitter插件
+
+关闭LiveSplit，运行`hksplitmaker.exe`，点击右上角的`更新LiveSplit`按钮，按照接下来的提示操作即可。
 
 ## 如何使用
 
@@ -32,9 +33,24 @@
 
 8. 打开LiveSplit -> 右键 -> Open Splits -> From File... ，选择刚刚保存的文件即可。
 
+## 编译说明
+
+**根据自己的编译环境，运行`build.bat`或`build.sh`即可进行编译。**
+
+如果想要自己使用`go build`进行编译，需要提前下载两个文件：
+
+```shell
+curl -O https://raw.githubusercontent.com/LiveSplit/LiveSplit.AutoSplitters/master/LiveSplit.AutoSplitters.xml
+curl -O https://raw.githubusercontent.com/ShootMe/LiveSplit.HollowKnight/master/Components/LiveSplit.HollowKnight.dll
+
+# -ldflags中，-s是去掉符号表，-w是去掉调试信息，均可减小所生成二进制文件的体积
+# -H=windowsgui是打开Windows窗口时隐藏控制台的黑框框
+GOOS=windows GOARCH=amd64 go build -ldflags "-s -w -H=windowsgui" -o hksplitmaker.exe
+```
+
 ## 如何优化翻译
 
-请不要直接在这个repo修改`translate.tsv`文件，请前往[CuteReimu/hk-split-maker](https://github.com/CuteReimu/hk-split-maker)修改，修改后会自动同步到这里。
+请不要直接在这个repo修改`translate.csv`文件，请前往[CuteReimu/hk-split-maker](https://github.com/CuteReimu/hk-split-maker)修改，修改后会自动同步到这里。
 
 ## 特别鸣谢
 

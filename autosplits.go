@@ -9,6 +9,7 @@ import (
 	"io"
 	"path"
 	"regexp"
+	"slices"
 )
 
 type splitData struct {
@@ -26,11 +27,10 @@ func initSplitsSearchDict(content string) {
 	for i := 0; i < len(rs); i++ {
 		for j := i + 1; j <= len(rs); j++ {
 			s := string(rs[i:j])
-			v, ok := splitsSearchDict[s]
-			if !ok {
-				v = nil
+			v := splitsSearchDict[s]
+			if !slices.Contains(v, content) {
+				splitsSearchDict[s] = append(v, content)
 			}
-			splitsSearchDict[s] = append(v, content)
 		}
 	}
 }
@@ -212,19 +212,19 @@ func resetLines(count int) {
 						onSearchSplitId(false, line)
 					},
 				},
-				PushButton{Text: "✘", MaxSize: Size{Width: 25}, OnClicked: func() {
+				PushButton{Text: "✘", MaxSize: Size{Width: 25}, ToolTipText: "删除", OnClicked: func() {
 					if len(lines) > 1 {
 						removeLine(line)
 					}
 				}},
-				PushButton{Text: "↑+", MaxSize: Size{Width: 25},
+				PushButton{Text: "↑+", MaxSize: Size{Width: 25}, ToolTipText: "在上方增加一行",
 					OnClicked: func() {
 						idx := splitLinesView.Children().Index(line.line)
 						addLine(true)
 						moveLine(idx)
 					},
 				},
-				PushButton{Text: "↓+", MaxSize: Size{Width: 25},
+				PushButton{Text: "↓+", MaxSize: Size{Width: 25}, ToolTipText: "在下方增加一行",
 					OnClicked: func() {
 						idx := splitLinesView.Children().Index(line.line)
 						addLine(true)
@@ -287,6 +287,8 @@ func moveLine(index int) {
 		return
 	}
 	for i := len(lines) - 2; i >= index; i-- {
+		lines[i+1].splitId.Model().(*splitIdModel).items = lines[i].splitId.Model().(*splitIdModel).items
+		lines[i+1].splitId.Model().(*splitIdModel).PublishItemsReset()
 		err := lines[i+1].splitId.SetText(lines[i].splitId.Text())
 		if err != nil {
 			walk.MsgBox(nil, "错误", err.Error(), walk.MsgBoxIconError)
@@ -320,14 +322,14 @@ func onSearchSplitId(initAll bool, line *lineData) {
 		return
 	}
 	if len(s) > 0 {
-		for _, text := range model.items {
-			if text == s {
-				err := line.name.SetText(dropBrackets(text))
+		if _, ok := splitsDict[s]; ok {
+			if line.name != nil {
+				err := line.name.SetText(dropBrackets(s))
 				if err != nil {
 					walk.MsgBox(mainWindow, "错误", err.Error(), walk.MsgBoxIconError)
 				}
-				return
 			}
+			return
 		}
 		v, ok := splitsSearchDict[s]
 		if ok && len(v) > 0 {
